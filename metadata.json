@@ -1,0 +1,6 @@
+{
+  "name": "DroopFlow Landing Page",
+  "description": "Página de vendas de alta conversão para o DroopFlow, o SaaS de Gestão Financeira Inteligente para Dropshipping de alta performance.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
