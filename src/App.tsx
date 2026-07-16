@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { 
   TrendingUp, 
   Wallet, 
@@ -21,11 +21,9 @@ import {
   FileSpreadsheet,
   Zap,
   BarChart3,
-  Flame,
-  Star,
-  Users
+  Flame
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useScroll, useTransform } from "motion/react";
 import InteractiveAppMockup from "./components/InteractiveAppMockup";
 
 // High-fidelity AppLogo representing the white squircle, green drop, and dark arrow
@@ -102,6 +100,25 @@ export default function App() {
   // Conversions pricing - strictly 297 MT / month (Plano Pro)
   const priceProMT = "297 MT";
 
+  // Refs and parallax offsets for 'Diferenciais' and 'Comparativo' sections
+  const diferenciaisRef = useRef<HTMLElement>(null);
+  const { scrollYProgress: scrollYDef } = useScroll({
+    target: diferenciaisRef,
+    offset: ["start end", "end start"]
+  });
+  const defBgY1 = useTransform(scrollYDef, [0, 1], [-60, 60]);
+  const defBgY2 = useTransform(scrollYDef, [0, 1], [40, -40]);
+  const defBgRotate = useTransform(scrollYDef, [0, 1], [0, 15]);
+
+  const comparativoRef = useRef<HTMLElement>(null);
+  const { scrollYProgress: scrollYComp } = useScroll({
+    target: comparativoRef,
+    offset: ["start end", "end start"]
+  });
+  const compBgY1 = useTransform(scrollYComp, [0, 1], [-80, 80]);
+  const compBgY2 = useTransform(scrollYComp, [0, 1], [50, -50]);
+  const compBgRotate = useTransform(scrollYComp, [0, 1], [-10, 10]);
+
   return (
     <div className="min-h-screen bg-[#050505] text-gray-100 font-sans selection:bg-emerald-500 selection:text-slate-950 overflow-x-hidden antialiased">
       
@@ -136,7 +153,7 @@ export default function App() {
         {/* Main Headings */}
         <div className="text-center max-w-4xl mx-auto space-y-6">
           <h1 className="font-display font-black text-4xl sm:text-5xl md:text-6xl text-white tracking-tighter leading-[0.95] uppercase">
-            Podes faturar bue, mas no final paras, olhas e <br />
+            Podes faturar maning, mas no final paras, olhas e <br />
             <span className="text-emerald-500 italic">
               não vês onde foi o dinheiro?
             </span>
@@ -200,8 +217,14 @@ export default function App() {
             </h2>
             <p className="text-gray-400 text-sm sm:text-base leading-relaxed">
               Diferente de capturas estáticas, abaixo você tem o nosso <b>aplicativo simulado de ponta a ponta</b>. 
-              Clique nas guias da barra lateral (Painel Geral, ROI, Pockets, Vendas), simule novas vendas em <b>"Adicionar Venda Teste"</b> e veja os cofres e cálculos atualizarem instantaneamente!
+              Clique nas guias da barra lateral (Painel Geral, ROI, Pockets, Vendas), teste o <b>simulador de venda real</b> e o <b>simulador de saída</b>, e veja os cofres e cálculos atualizarem instantaneamente!
             </p>
+            <div className="bg-amber-500/10 border border-amber-500/25 p-4 rounded-2xl text-amber-400 text-xs sm:text-sm max-w-2xl mx-auto flex items-start gap-3 text-left">
+              <Sparkles className="w-5 h-5 shrink-0 mt-0.5 text-amber-400" />
+              <span>
+                <b>Nota Importante:</b> Isto é apenas uma <b>simulação demonstrativa</b> para veres como funciona o nosso fluxo real de rateio. Este protótipo <b>não é nem um terço do que a aplicação real pode fazer</b> pela tua operação! Usa o <b>simulador de venda real</b> (botão Adicionar Venda) e o <b>simulador de saída</b> (botão Registar Saída) para veres o poder do DroopFlow em ação.
+              </span>
+            </div>
           </div>
 
           {/* Simulated App Embed */}
@@ -211,9 +234,33 @@ export default function App() {
       </section>
 
       {/* FEATURES SECTION: OS DIFERENCIAIS ÚNICOS */}
-      <section id="diferenciais" className="py-20 max-w-7xl mx-auto px-6 scroll-mt-20">
+      <section id="diferenciais" ref={diferenciaisRef} className="relative overflow-hidden py-20 max-w-7xl mx-auto px-6 scroll-mt-20">
         
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+        {/* Parallax Background Elements */}
+        <motion.div 
+          style={{ y: defBgY1 }}
+          className="absolute top-10 left-10 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none -z-10"
+        />
+        <motion.div 
+          style={{ y: defBgY2, rotate: defBgRotate }}
+          className="absolute bottom-10 right-10 w-[400px] h-[400px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none -z-10"
+        />
+        {/* Floating geometric wireframes that translate as you scroll */}
+        <motion.div 
+          style={{ y: defBgY1, rotate: defBgRotate }}
+          className="absolute right-12 top-20 w-16 h-16 border border-emerald-500/10 rounded-2xl pointer-events-none -z-10 opacity-30"
+        />
+        <motion.div 
+          style={{ y: defBgY2 }}
+          className="absolute left-8 bottom-24 w-24 h-24 border border-emerald-500/5 rounded-full pointer-events-none -z-10 opacity-30"
+        />
+        {/* Subtle grid pattern */}
+        <motion.div 
+          style={{ y: defBgY1 }}
+          className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff02_1px,transparent_1px),linear-gradient(to_bottom,#ffffff02_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] pointer-events-none -z-10"
+        />
+
+        <div className="text-center max-w-3xl mx-auto space-y-4 mb-16 relative z-10">
           <span className="text-emerald-400 text-xs font-mono font-bold tracking-widest uppercase">ENGENHARIA FINANCEIRA MODERNA</span>
           <h2 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tight uppercase">
             Desenvolvido especificamente para quem vende em Moçambique.
@@ -227,7 +274,13 @@ export default function App() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           
           {/* ROI Proporcional */}
-          <div className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group">
+          <motion.div 
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
               <TrendingUp className="w-6 h-6 text-emerald-400" />
             </div>
@@ -235,10 +288,16 @@ export default function App() {
             <p className="text-sm text-gray-400 leading-relaxed">
               Pare de olhar apenas para o faturamento bruto ou ROAS fantasioso do Facebook Ads. O DroopFlow calcula o lucro líquido verdadeiro, ponderando as taxas do M-Pesa, o frete regional e o custo real de cada produto vendido.
             </p>
-          </div>
+          </motion.div>
 
           {/* Caixinhas Inteligentes */}
-          <div className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group">
+          <motion.div 
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
               <Wallet className="w-6 h-6 text-emerald-400" />
             </div>
@@ -246,10 +305,16 @@ export default function App() {
             <p className="text-sm text-gray-400 leading-relaxed">
               Distribua automaticamente todo o faturamento recebido em cofres financeiros protegidos. Separe na hora a Margem de Segurança, Capital de Giro e orçamento para novos anúncios. Nunca mais queime dinheiro de tráfego!
             </p>
-          </div>
+          </motion.div>
 
           {/* Calendário Periódico */}
-          <div className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group">
+          <motion.div 
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
               <Calendar className="w-6 h-6 text-emerald-400" />
             </div>
@@ -257,10 +322,16 @@ export default function App() {
             <p className="text-sm text-gray-400 leading-relaxed">
               Analise métricas e tendências por períodos específicos com um único clique. Monitore a variação percentual de gastos e receitas diárias, semanais ou mensais para tomar decisões de escala com máxima segurança.
             </p>
-          </div>
+          </motion.div>
 
           {/* Zonas de Entrega */}
-          <div className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group">
+          <motion.div 
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
               <Settings className="w-6 h-6 text-emerald-400" />
             </div>
@@ -268,10 +339,16 @@ export default function App() {
             <p className="text-sm text-gray-400 leading-relaxed">
               O dropshipping nacional exige cálculos precisos de entrega. Defina taxas de entrega fixas para regiões geográficas específicas e o sistema desconta automaticamente cada frete conforme o local de destino de cada venda.
             </p>
-          </div>
+          </motion.div>
 
           {/* Mobile-First */}
-          <div className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group">
+          <motion.div 
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
               <ShoppingBag className="w-6 h-6 text-emerald-400" />
             </div>
@@ -279,10 +356,16 @@ export default function App() {
             <p className="text-sm text-gray-400 leading-relaxed">
               Como você passa a maior parte do tempo gerindo a operação na rua, o DroopFlow foi desenhado para ser leve e extremamente amigável no celular. Registre vendas e controle seus cofres onde estiver.
             </p>
-          </div>
+          </motion.div>
 
           {/* Campanhas de Anúncios */}
-          <div className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group">
+          <motion.div 
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-white/5 border border-white/10 p-8 rounded-3xl relative hover:border-emerald-500/20 transition-all group"
+          >
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-6">
               <Megaphone className="w-6 h-6 text-emerald-400" />
             </div>
@@ -290,15 +373,31 @@ export default function App() {
             <p className="text-sm text-gray-400 leading-relaxed">
               Controle os custos do Facebook Ads com clareza matemática. Insira os orçamentos gastos por criativo de anúncio e saiba instantaneamente qual produto ou criativo está performando com lucro real de verdade.
             </p>
-          </div>
+          </motion.div>
 
         </div>
 
       </section>
 
       {/* SPREADSHEETS VS DROPFLOW */}
-      <section id="comparativo" className="py-20 bg-transparent border-t border-white/5 scroll-mt-20">
-        <div className="max-w-7xl mx-auto px-6">
+      <section id="comparativo" ref={comparativoRef} className="relative overflow-hidden py-20 bg-transparent border-t border-white/5 scroll-mt-20">
+        
+        {/* Parallax Background Elements */}
+        <motion.div 
+          style={{ y: compBgY1 }}
+          className="absolute top-1/4 -left-20 w-80 h-80 bg-rose-500/5 rounded-full blur-3xl pointer-events-none -z-10"
+        />
+        <motion.div 
+          style={{ y: compBgY2, rotate: compBgRotate }}
+          className="absolute bottom-1/4 -right-20 w-[450px] h-[450px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none -z-10"
+        />
+        {/* Subtle grid pattern for texture */}
+        <motion.div 
+          style={{ y: compBgY1 }}
+          className="absolute inset-0 bg-[radial-gradient(#ffffff02_1.5px,transparent_1.5px)] [background-size:24px_24px] opacity-60 pointer-events-none -z-10"
+        />
+
+        <div className="max-w-7xl mx-auto px-6 relative z-10">
           
           <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
             <span className="text-emerald-400 text-xs font-mono font-bold tracking-widest uppercase">CONFRONTANDO A REALIDADE</span>
@@ -306,14 +405,20 @@ export default function App() {
               Por que gerir tudo na cabeça ou insistir em planilhas está a queimar as tuas vendas?
             </h2>
             <p className="text-gray-400 text-sm sm:text-base leading-relaxed">
-              Fazer tudo de cabeça é pura ilusão. Tu só controlas o faturamento bruto que brada no WhatsApp ou na Shopify, achas que tens bue de dinheiro, mas no final do dia estás apenas a devolver tudo para os anúncios do Facebook Ads (tio Zuck) sem reter margem real.
+              Fazer tudo de cabeça é pura ilusão. Tu só controlas o faturamento bruto que brada no WhatsApp ou na Shopify, achas que tens maning de dinheiro, mas no final do dia estás apenas a devolver tudo para os anúncios do Facebook Ads (tio Zuck) sem reter margem real.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
             
             {/* The spreadsheet side */}
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+              className="bg-white/5 border border-white/10 rounded-3xl p-8 space-y-6"
+            >
               <div className="flex items-center gap-3 border-b border-white/5 pb-4">
                 <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center">
                   <FileSpreadsheet className="w-5.5 h-5.5 text-rose-500" />
@@ -331,7 +436,7 @@ export default function App() {
                 </li>
                 <li className="flex items-start gap-3">
                   <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                  <span><b>O "Tio Zuck" Devora Tudo:</b> Tu vês bue de notificações de vendas Shopify ou pedidos no WhatsApp, mas o custo por anúncio está tão alto que tu apenas estás a devolver dinheiro ao Facebook Ads sem veres lucro líquido.</span>
+                  <span><b>O "Tio Zuck" Devora Tudo:</b> Tu vês maning de notificações de vendas Shopify ou pedidos no WhatsApp, mas o custo por anúncio está tão alto que tu apenas estás a devolver dinheiro ao Facebook Ads sem veres lucro líquido.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
@@ -339,13 +444,19 @@ export default function App() {
                 </li>
                 <li className="flex items-start gap-3">
                   <X className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
-                  <span><b>Dinheiro Misturado:</b> Misturas a verba do fornecedor, o frete regional e o teu dinheiro de anúncios. Quando dás por ti, gastaste o capital de giro achando que já estavas a lucrar bue.</span>
+                  <span><b>Dinheiro Misturado:</b> Misturas a verba do fornecedor, o frete regional e o teu dinheiro de anúncios. Quando dás por ti, gastaste o capital de giro achando que já estavas a lucrar maning.</span>
                 </li>
               </ul>
-            </div>
+            </motion.div>
 
             {/* The DroopFlow side */}
-            <div className="bg-emerald-950/10 border border-emerald-500/20 rounded-3xl p-8 space-y-6 relative overflow-hidden">
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-100px" }}
+              transition={{ duration: 0.6 }}
+              className="bg-emerald-950/10 border border-emerald-500/20 rounded-3xl p-8 space-y-6 relative overflow-hidden"
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
               
               <div className="flex items-center gap-3 border-b border-emerald-500/20 pb-4">
@@ -376,33 +487,11 @@ export default function App() {
                   <span><b>Saúde do Negócio no Celular:</b> Interface mobile ultraleve para você acompanhar as métricas fundamentais do seu negócio na rua ou em qualquer lugar.</span>
                 </li>
               </ul>
-            </div>
+            </motion.div>
 
           </div>
 
-          {/* Social Proof Quote block */}
-          <div className="mt-16 bg-white/5 border border-white/10 p-8 rounded-3xl flex flex-col md:flex-row items-center gap-6 justify-between">
-            <div className="space-y-2">
-              <div className="flex gap-1">
-                {[...Array(5)].map((_, i) => <Star key={i} className="w-4.5 h-4.5 text-emerald-400 fill-current" />)}
-              </div>
-              <p className="text-gray-300 text-sm italic">
-                "Eu achava que estava faturando alto com meu e-commerce de eletrónicos, mas só quando entrei no DroopFlow percebi que as taxas operacionais e custos de envio fora da Matola estavam drenando meu lucro líquido. Ajustei minha estratégia e recuperei o controlo financeiro."
-              </p>
-              <span className="text-xs text-gray-500 font-bold uppercase font-mono block">— Sam Shelton, E-commerce Player em Moçambique</span>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <div className="flex -space-x-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-950 border-2 border-[#050505] flex items-center justify-center font-bold text-xs text-white">S</div>
-                <div className="w-10 h-10 rounded-full bg-emerald-900 border-2 border-[#050505] flex items-center justify-center font-bold text-xs text-white">M</div>
-                <div className="w-10 h-10 rounded-full bg-emerald-800 border-2 border-[#050505] flex items-center justify-center font-bold text-xs text-white">D</div>
-              </div>
-              <div className="text-xs">
-                <p className="text-white font-bold">+1,400 membros</p>
-                <p className="text-gray-500">faturando com margem real</p>
-              </div>
-            </div>
-          </div>
+
 
         </div>
       </section>
@@ -709,6 +798,47 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
+
+      {/* Floating WhatsApp Button */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.8, y: 50 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ delay: 1.5, type: "spring", stiffness: 200, damping: 15 }}
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-3"
+      >
+        {/* Help Bubble text */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 2.2 }}
+          className="hidden sm:flex items-center gap-1.5 bg-[#0a0a0a]/90 backdrop-blur-md border border-emerald-500/30 text-white py-2 px-4 rounded-full text-xs font-medium shadow-2xl shadow-emerald-500/5 select-none"
+        >
+          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+          <span>Dúvidas? Fale Connosco</span>
+        </motion.div>
+
+        {/* Real WhatsApp Button with brand color */}
+        <motion.a
+          href="https://wa.me/258847404158?text=Olá! Gostaria de saber mais sobre o DroopFlow, vim da Landing Page."
+          target="_blank"
+          rel="noopener noreferrer"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+          className="relative w-14 h-14 rounded-full bg-[#25D366] hover:bg-[#20ba5a] flex items-center justify-center text-white shadow-[0_4px_24px_rgba(37,211,102,0.4)] transition-colors duration-300 group cursor-pointer"
+          title="Falar no WhatsApp"
+        >
+          {/* Pulsing ring */}
+          <span className="absolute inset-0 rounded-full bg-[#25D366]/40 animate-ping scale-110 pointer-events-none" />
+
+          {/* Official WhatsApp SVG Logo */}
+          <svg 
+            viewBox="0 0 24 24" 
+            className="w-7 h-7 fill-white drop-shadow-md"
+          >
+            <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.266 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.457L0 24zm6.59-4.846c1.6.95 3.188 1.449 4.825 1.451 5.436 0 9.86-4.413 9.863-9.864.001-2.641-1.024-5.123-2.887-6.989C16.484 1.888 14.004 1.03 11.4 1.03c-5.44 0-9.866 4.414-9.868 9.866-.001 1.702.451 3.361 1.309 4.814L1.751 21.05l5.525-1.449-.629-.447zM17.41 14.33c-.318-.16-1.882-.93-2.172-1.036-.29-.107-.5-.16-.71.16-.21.32-.81.103-.993.318s-.363.21-.681.05c-.318-.16-1.343-.495-2.558-1.579-.945-.844-1.583-1.886-1.768-2.204-.185-.318-.02-.49.139-.648.143-.142.318-.371.477-.557.16-.186.213-.318.318-.53.106-.213.053-.4-.027-.557-.08-.16-.71-1.714-.972-2.344-.256-.615-.517-.531-.71-.541-.183-.01-.393-.012-.602-.012s-.549.078-.836.393c-.287.318-1.099 1.075-1.099 2.622 0 1.547 1.129 3.038 1.286 3.25.158.213 2.222 3.393 5.385 4.757.753.324 1.341.518 1.8.662.756.24 1.444.207 1.989.126.607-.09 1.882-.77 2.144-1.474.262-.705.262-1.31.183-1.438-.078-.128-.29-.21-.607-.37z"/>
+          </svg>
+        </motion.a>
+      </motion.div>
 
     </div>
   );

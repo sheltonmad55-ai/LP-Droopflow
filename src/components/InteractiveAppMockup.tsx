@@ -54,7 +54,7 @@ export default function InteractiveAppMockup() {
     {
       id: "7a9713ab",
       date: "2026-07-14",
-      product: "Cinto ajustador de camisa",
+      product: "Compressor de Ar Digital",
       paymentMethod: "M-Pesa",
       value: 999,
       margin: 899,
@@ -64,7 +64,7 @@ export default function InteractiveAppMockup() {
     {
       id: "588c3b85",
       date: "2026-07-14",
-      product: "Cinto ajustador de camisa",
+      product: "Compressor de Ar Digital",
       paymentMethod: "e-Mola",
       value: 699,
       margin: 599,
@@ -75,7 +75,7 @@ export default function InteractiveAppMockup() {
     {
       id: "351faf03",
       date: "2026-07-14",
-      product: "Cinto ajustador de camisa",
+      product: "Compressor de Ar Digital",
       paymentMethod: "M-Pesa",
       value: 999,
       margin: 899,
@@ -85,7 +85,7 @@ export default function InteractiveAppMockup() {
     {
       id: "5501a704",
       date: "2026-07-13",
-      product: "Veda portas",
+      product: "Organizador de Maquilhagem Giratório",
       paymentMethod: "M-Pesa",
       value: 3000,
       margin: 2550,
@@ -95,7 +95,7 @@ export default function InteractiveAppMockup() {
     {
       id: "6b6e6bf3",
       date: "2026-07-13",
-      product: "Veda portas",
+      product: "Organizador de Maquilhagem Giratório",
       paymentMethod: "M-Pesa",
       value: 1800,
       margin: 1530,
@@ -105,39 +105,173 @@ export default function InteractiveAppMockup() {
   ]);
 
   // Form state to add new sales interactively!
-  const [newProduct, setNewProduct] = useState("Cinto ajustador de camisa");
-  const [newValue, setNewValue] = useState("999");
+  const [newProduct, setNewProduct] = useState("Compressor de Ar Digital");
+  const [newValue, setNewValue] = useState("1200");
   const [newPayment, setNewPayment] = useState("M-Pesa");
   const [showAddModal, setShowAddModal] = useState(false);
+
+  // Celebration & Confetti state
+  const [celebrations, setCelebrations] = useState<any[]>([]);
+  const [showCelebrationBadge, setShowCelebrationBadge] = useState(false);
+  const [lastAddedSale, setLastAddedSale] = useState<any>(null);
+
+  // New detailed state variables to support screenshot features!
+  const [selectedZone, setSelectedZone] = useState("Maputo Cidade");
+  const [newSaleNotes, setNewSaleNotes] = useState("");
+  const [newSaleDate, setNewSaleDate] = useState("2026-07-16");
+  const [productList, setProductList] = useState([
+    "Compressor de Ar Digital",
+    "Organizador de Maquilhagem Giratório",
+    "Desentupidor profissional",
+    "Kit de Limpeza Automotivo"
+  ]);
+  const [zonesList, setZonesList] = useState([
+    "Maputo Cidade",
+    "Maputo Província (Matola)",
+    "Beira / Sofala",
+    "Nampula",
+    "Zambézia (Quelimane)",
+    "Gaza (Xai-Xai)",
+    "Tete"
+  ]);
+  const [quickProductInput, setQuickProductInput] = useState("");
+  const [quickZoneInput, setQuickZoneInput] = useState("");
+  const [showQuickProductForm, setShowQuickProductForm] = useState(false);
+  const [showQuickZoneForm, setShowQuickZoneForm] = useState(false);
+
+  // Form state to add new outflows interactively!
+  const [showOutflowModal, setShowOutflowModal] = useState(false);
+  const [outflowValue, setOutflowValue] = useState("200");
+  const [outflowPocket, setOutflowPocket] = useState("Anúncios");
+  const [outflowCategory, setOutflowCategory] = useState("Anúncios (Facebook Ads/Google Ads)");
+  const [outflowDescription, setOutflowDescription] = useState("");
+  const [outflowDate, setOutflowDate] = useState("2026-07-15");
+  const [outflowList, setOutflowList] = useState<any[]>([
+    { name: "Wifi Semanal", category: "Wifi", value: 1800, date: "2026-07-14", pocket: "Wifi" }
+  ]);
+
+  const addOutflow = (e: React.FormEvent) => {
+    e.preventDefault();
+    const val = parseFloat(outflowValue) || 0;
+    const newOutflow = {
+      name: outflowDescription || outflowCategory,
+      category: outflowCategory,
+      value: val,
+      date: outflowDate,
+      pocket: outflowPocket
+    };
+    setOutflowList([newOutflow, ...outflowList]);
+    setShowOutflowModal(false);
+  };
 
   const addSale = (e: React.FormEvent) => {
     e.preventDefault();
     const val = parseFloat(newValue) || 0;
-    const marg = Math.round(val * 0.85); // simulated 85% margin
-    const adsCost = Math.round(val * 0.25);
+    
+    // Exact proportional calculations as described in the screenshot:
+    // Fornecedor (Custo de Produto) = 15% of total
     const forCost = Math.round(val * 0.15);
-    const delCost = Math.round(val * 0.2);
-    const lucVal = val - adsCost - forCost - delCost;
+    // Delivery (Entrega) based on selected zone
+    let delCost = 200;
+    if (selectedZone === "Maputo Cidade") delCost = 150;
+    else if (selectedZone === "Maputo Província (Matola)") delCost = 250;
+    else if (selectedZone === "Beira / Sofala") delCost = 350;
+    else if (selectedZone === "Nampula") delCost = 300;
+    else if (selectedZone === "Zambézia (Quelimane)") delCost = 350;
+    else if (selectedZone === "Gaza (Xai-Xai)") delCost = 250;
+    else if (selectedZone === "Tete") delCost = 400;
+
+    const margemLiquidaRestante = Math.max(0, val - forCost - delCost);
+    // 20% to Ads pocket, 80% to Lucro pocket
+    const adsCost = Math.round(margemLiquidaRestante * 0.20);
+    const lucVal = margemLiquidaRestante - adsCost;
 
     const newSaleItem: Sale = {
       id: Math.random().toString(36).substring(2, 10),
-      date: new Date().toISOString().split('T')[0],
+      date: newSaleDate,
       product: newProduct,
       paymentMethod: newPayment,
       value: val,
-      margin: marg,
+      margin: Math.round(margemLiquidaRestante),
       breakdown: {
         luc: parseFloat(lucVal.toFixed(2)),
         ads: adsCost,
         for: forCost,
         del: delCost
       },
-      status: "Entregue"
+      status: "Entregue",
+      zone: selectedZone
     };
 
     setSalesList([newSaleItem, ...salesList]);
     setShowAddModal(false);
+    
+    // Save last added sale for celebration modal details
+    setLastAddedSale({
+      product: newProduct,
+      value: val,
+      luc: lucVal,
+      ads: adsCost,
+      for: forCost,
+      del: delCost
+    });
+
+    // Generate physical confetti celebration particles
+    const colors = ["#25D366", "#10B981", "#34D399", "#fbbf24", "#f59e0b", "#6366f1", "#f43f5e", "#38bdf8", "#ec4899"];
+    const shapes = ["circle", "square", "triangle"];
+    const particles = Array.from({ length: 80 }).map((_, i) => {
+      // Starts around the bottom area of the application viewport
+      const startX = Math.random() * 100; // 0% to 100% of container width
+      const startY = 100; // bottom edge
+      
+      return {
+        id: `${Math.random()}-${i}`,
+        startX,
+        startY,
+        // Shoots left or right depending on starting side, and climbs upwards with high initial velocity
+        tx: (Math.random() - 0.5) * 450 + (startX > 50 ? -80 : 80),
+        ty: -250 - Math.random() * 320,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: Math.random() * 8 + 6, // 6px to 14px
+        delay: Math.random() * 0.25, // staggered entrance
+        rotate: Math.random() * 360,
+        rotateSpeed: Math.random() * 900 - 450,
+        shape: shapes[Math.floor(Math.random() * shapes.length)]
+      };
+    });
+
+    setCelebrations(particles);
+    setShowCelebrationBadge(true);
+
+    // Auto-dismiss the celebration details card after 4.5 seconds
+    const badgeTimeout = setTimeout(() => {
+      setShowCelebrationBadge(false);
+    }, 4500);
+
+    // Clean particles from DOM after 5.5 seconds to free browser threads
+    const particlesTimeout = setTimeout(() => {
+      setCelebrations([]);
+    }, 5500);
+    
+    // Reset secondary fields
+    setNewSaleNotes("");
   };
+
+  // Live dynamic calculations for the Registar Venda form preview
+  const currentVal = parseFloat(newValue) || 0;
+  const previewFornecedor = Math.round(currentVal * 0.15);
+  let previewDelivery = 200;
+  if (selectedZone === "Maputo Cidade") previewDelivery = 150;
+  else if (selectedZone === "Maputo Província (Matola)") previewDelivery = 250;
+  else if (selectedZone === "Beira / Sofala") previewDelivery = 350;
+  else if (selectedZone === "Nampula") previewDelivery = 300;
+  else if (selectedZone === "Zambézia (Quelimane)") previewDelivery = 350;
+  else if (selectedZone === "Gaza (Xai-Xai)") previewDelivery = 250;
+  else if (selectedZone === "Tete") previewDelivery = 400;
+
+  const previewRestante = Math.max(0, currentVal - previewFornecedor - previewDelivery);
+  const previewAds = Math.round(previewRestante * 0.20);
+  const previewLucro = previewRestante - previewAds;
 
   // Calculations based on list
   const totalBilling = salesList.reduce((sum, item) => sum + item.value, 18730); // Base cumulative offset
@@ -323,9 +457,7 @@ export default function InteractiveAppMockup() {
                     <Plus className="w-5 h-5 stroke-[2.5]" /> Adicionar Venda
                   </button>
                   <button 
-                    onClick={() => {
-                      alert("Saída Registada com Sucesso! (Simulação: R$ -200 MT deduzidos da caixinha correspondente)");
-                    }} 
+                    onClick={() => setShowOutflowModal(true)} 
                     className="flex items-center justify-center gap-2 bg-transparent hover:bg-slate-900 text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 font-bold py-3.5 px-6 rounded-2xl transition-all"
                   >
                     <Minus className="w-5 h-5 text-rose-500 stroke-[2.5]" /> Registar Saída
@@ -726,7 +858,7 @@ export default function InteractiveAppMockup() {
                         <td className="p-4 text-right font-mono font-black text-white">5.98x</td>
                       </tr>
                       <tr className="hover:bg-slate-900/30 transition-all">
-                        <td className="p-4 font-bold text-white">Veda portas, cinto ajustador de camisa</td>
+                        <td className="p-4 font-bold text-white">Compressor de Ar Digital, Organizador Giratório</td>
                         <td className="p-4"><span className="text-slate-300 font-medium">Facebook Ads</span></td>
                         <td className="p-4 text-right font-mono font-bold text-rose-400">2 $</td>
                         <td className="p-4 text-right font-mono font-bold text-emerald-400">+60 $</td>
@@ -1032,7 +1164,7 @@ export default function InteractiveAppMockup() {
                           <TrendingUp className="w-4 h-4 text-emerald-400" />
                         </span>
                         <div>
-                          <span className="font-bold text-white block">Veda portas <b className="text-indigo-400 text-[10px] ml-1">5x</b></span>
+                          <span className="font-bold text-white block">Organizador de Maquilhagem <b className="text-emerald-400 text-[10px] ml-1">5x</b></span>
                           <span className="text-[10px] text-slate-500 font-mono">12 de Julho • ID: 7a9713ab</span>
                         </div>
                       </div>
@@ -1077,6 +1209,284 @@ export default function InteractiveAppMockup() {
       {/* MODAL 2: Interactive ADD Sale modal */}
       <AnimatePresence>
         {showAddModal && (
+          <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-[#0b0f19] border border-slate-800 w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl my-auto"
+            >
+              {/* Header */}
+              <div className="p-5 border-b border-slate-800/80 flex items-center justify-between bg-slate-950/40">
+                <div className="flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" className="w-5 h-5 text-emerald-400 animate-pulse" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                  </span>
+                  <div>
+                    <h4 className="font-display font-black text-white text-base">Registar Nova venda</h4>
+                    <p className="text-[10px] text-slate-400 font-medium">Distribuição automática de fundos</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setShowAddModal(false)}
+                  className="p-1.5 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800 transition-all"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Form Body */}
+              <form onSubmit={addSale} className="p-5 space-y-4 text-xs text-left max-h-[75vh] overflow-y-auto">
+                
+                {/* 1. Valor Recebido (Total Pago) */}
+                <div className="space-y-1 relative">
+                  <div className="flex justify-between items-center">
+                    <label className="text-slate-400 font-bold uppercase tracking-wider block text-[10px]">Valor Recebido (Total Pago)</label>
+                    <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase">MT</span>
+                  </div>
+                  <div className="relative">
+                    <input 
+                      type="number" 
+                      value={newValue}
+                      onChange={(e) => setNewValue(e.target.value)}
+                      className="w-full bg-slate-950/80 border border-slate-800/80 rounded-xl p-3.5 text-white font-mono font-black text-xl focus:outline-none focus:border-emerald-500/80 transition-all"
+                      placeholder="0.00"
+                      required
+                    />
+                    <div className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 font-mono text-xs pointer-events-none">
+                      Metical
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Produto Vendido */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-slate-400 font-bold uppercase tracking-wider block text-[10px]">Produto Vendido</label>
+                    <button 
+                      type="button" 
+                      onClick={() => setShowQuickProductForm(!showQuickProductForm)}
+                      className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-all"
+                    >
+                      + Criar Produto Rápido
+                    </button>
+                  </div>
+
+                  <AnimatePresence>
+                    {showQuickProductForm && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2 overflow-hidden"
+                      >
+                        <span className="text-[10px] text-slate-400 font-semibold block">Nome do Novo Produto</span>
+                        <div className="flex gap-2">
+                          <input 
+                            type="text" 
+                            value={quickProductInput}
+                            onChange={(e) => setQuickProductInput(e.target.value)}
+                            placeholder="Ex: Mini Compressor Pro"
+                            className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-emerald-500"
+                          />
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              if (quickProductInput.trim()) {
+                                setProductList([...productList, quickProductInput.trim()]);
+                                setNewProduct(quickProductInput.trim());
+                                setQuickProductInput("");
+                                setShowQuickProductForm(false);
+                              }
+                            }}
+                            className="bg-emerald-500 text-slate-950 px-3 rounded-lg font-bold hover:bg-emerald-400 transition-all text-[11px]"
+                          >
+                            Adicionar
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <select 
+                    value={newProduct} 
+                    onChange={(e) => setNewProduct(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-medium focus:outline-none focus:border-emerald-500 transition-all"
+                  >
+                    {productList.map((prod, idx) => (
+                      <option key={idx} value={prod}>{prod}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 3. Zona de Entrega / Envio */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <label className="text-slate-400 font-bold uppercase tracking-wider block text-[10px]">Zona de Entrega / Envio</label>
+                    <button 
+                      type="button" 
+                      onClick={() => setShowQuickZoneForm(!showQuickZoneForm)}
+                      className="text-[10px] font-bold text-emerald-400 hover:text-emerald-300 transition-all"
+                    >
+                      + Nova Zona Rápida
+                    </button>
+                  </div>
+
+                  <AnimatePresence>
+                    {showQuickZoneForm && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2 overflow-hidden"
+                      >
+                        <span className="text-[10px] text-slate-400 font-semibold block">Nome da Nova Região / Província</span>
+                        <div className="flex gap-2">
+                          <input 
+                            type="text" 
+                            value={quickZoneInput}
+                            onChange={(e) => setQuickZoneInput(e.target.value)}
+                            placeholder="Ex: Cabo Delgado (Pemba)"
+                            className="flex-1 bg-slate-900 border border-slate-800 rounded-lg p-2 text-white text-xs focus:outline-none focus:border-emerald-500"
+                          />
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              if (quickZoneInput.trim()) {
+                                setZonesList([...zonesList, quickZoneInput.trim()]);
+                                setSelectedZone(quickZoneInput.trim());
+                                setQuickZoneInput("");
+                                setShowQuickZoneForm(false);
+                              }
+                            }}
+                            className="bg-emerald-500 text-slate-950 px-3 rounded-lg font-bold hover:bg-emerald-400 transition-all text-[11px]"
+                          >
+                            Adicionar
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  <select 
+                    value={selectedZone} 
+                    onChange={(e) => setSelectedZone(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-medium focus:outline-none focus:border-emerald-500 transition-all"
+                  >
+                    {zonesList.map((zone, idx) => (
+                      <option key={idx} value={zone}>{zone}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* 4. Pagamento e Data da Venda */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label className="text-slate-400 font-bold uppercase tracking-wider block text-[10px]">Pagamento</label>
+                    <select 
+                      value={newPayment} 
+                      onChange={(e) => setNewPayment(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-medium focus:outline-none focus:border-emerald-500 transition-all"
+                    >
+                      <option value="M-Pesa">M-Pesa</option>
+                      <option value="e-Mola">e-Mola</option>
+                      <option value="Shopify Gateway">Shopify Gateway</option>
+                      <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-slate-400 font-bold uppercase tracking-wider block text-[10px]">Data da Venda</label>
+                    <input 
+                      type="date" 
+                      value={newSaleDate}
+                      onChange={(e) => setNewSaleDate(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-medium font-mono focus:outline-none focus:border-emerald-500 transition-all"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* 5. Notas / Observações */}
+                <div className="space-y-1">
+                  <label className="text-slate-400 font-bold uppercase tracking-wider block text-[10px]">Notas / Observação (Opcional)</label>
+                  <input 
+                    type="text" 
+                    value={newSaleNotes}
+                    onChange={(e) => setNewSaleNotes(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 transition-all"
+                    placeholder="Ex: Cliente pediu entrega à tarde"
+                  />
+                </div>
+
+                {/* 6. Resumo da Distribuição (Screenshot dynamic feedback!) */}
+                <div className="mt-4 p-4 rounded-2xl bg-slate-950 border border-slate-800/80 space-y-3.5">
+                  <div className="flex justify-between items-center border-b border-slate-800/60 pb-2">
+                    <span className="text-[11px] font-bold text-white tracking-wide uppercase">Resumo da Distribuição</span>
+                    <span className="text-[9px] text-slate-500 font-bold uppercase">Pockets de destino</span>
+                  </div>
+
+                  <div className="space-y-2.5 text-xs">
+                    <div className="flex justify-between items-center text-slate-300">
+                      <span className="flex items-center gap-2">
+                        <span>📦</span> Resgate Fornecedor (Custo):
+                      </span>
+                      <span className="font-mono font-bold text-amber-400">+{previewFornecedor.toLocaleString()} MT</span>
+                    </div>
+
+                    <div className="flex justify-between items-center text-slate-300">
+                      <span className="flex items-center gap-2">
+                        <span>🚚</span> Resgate Delivery (Entrega):
+                      </span>
+                      <span className="font-mono font-bold text-indigo-400">+{previewDelivery.toLocaleString()} MT</span>
+                    </div>
+
+                    <div className="flex justify-between items-center border-t border-slate-800/50 pt-2.5">
+                      <span className="font-bold text-white text-xs uppercase">Margem Líquida Restante:</span>
+                      <span className="font-mono font-black text-emerald-400 text-sm">+{previewRestante.toLocaleString()} MT</span>
+                    </div>
+                  </div>
+
+                  {/* Sub distribution grid */}
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-left">
+                      <div className="text-[9px] text-slate-500 font-bold uppercase">📢 Anúncios (20%)</div>
+                      <div className="font-mono font-bold text-xs text-white mt-1">+{previewAds.toLocaleString()} MT</div>
+                    </div>
+                    <div className="bg-slate-900 border border-slate-800 p-2.5 rounded-xl text-left">
+                      <div className="text-[9px] text-slate-500 font-bold uppercase">💰 Lucro (80%)</div>
+                      <div className="font-mono font-bold text-xs text-white mt-1">+{previewLucro.toLocaleString()} MT</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submit Buttons */}
+                <div className="pt-2 flex gap-3">
+                  <button 
+                    type="button"
+                    onClick={() => setShowAddModal(false)}
+                    className="w-1/2 py-3 bg-slate-950 hover:bg-slate-900 text-slate-400 border border-slate-800 rounded-xl font-bold transition-all text-center text-xs"
+                  >
+                    Voltar
+                  </button>
+                  <button 
+                    type="submit"
+                    className="w-1/2 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/10 text-center text-xs"
+                  >
+                    Gravar Venda
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* MODAL 3: Interactive Outflow / Despesa modal (Screenshot 2) */}
+      <AnimatePresence>
+        {showOutflowModal && (
           <div className="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 z-50">
             <motion.div 
               initial={{ scale: 0.95, opacity: 0 }}
@@ -1085,76 +1495,214 @@ export default function InteractiveAppMockup() {
               className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
             >
               <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
-                <h4 className="font-display font-black text-white">Simular Nova Venda Real</h4>
+                <div className="flex items-center gap-3">
+                  <span className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" className="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M12 5v14M5 12h14" transform="rotate(45 12 12)" />
+                    </svg>
+                  </span>
+                  <div>
+                    <h4 className="font-display font-black text-white text-base">Registar Saída / Despesa</h4>
+                    <p className="text-[10px] text-slate-400">Deduzir valor de uma caixinha</p>
+                  </div>
+                </div>
                 <button 
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => setShowOutflowModal(false)}
                   className="p-1.5 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-slate-800"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <form onSubmit={addSale} className="p-6 space-y-4 text-xs text-left">
-                <p className="text-slate-400 leading-relaxed text-xs">
-                  Insira os dados da venda. O algoritmo do DroopFlow irá ratear automaticamente o valor bruto nas caixinhas configuradas (Lucro, Tráfego, Fornecedor e Envio).
-                </p>
-
-                <div className="space-y-1">
-                  <label className="text-slate-500 font-bold uppercase tracking-wider block">Produto Minerado</label>
-                  <select 
-                    value={newProduct} 
-                    onChange={(e) => setNewProduct(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-medium focus:outline-none focus:border-emerald-500"
-                  >
-                    <option value="Cinto ajustador de camisa">Cinto ajustador de camisa</option>
-                    <option value="Veda portas">Veda portas</option>
-                    <option value="Desentupidor profissional">Desentupidor profissional</option>
-                    <option value="Kit de Limpeza Automotivo">Kit de Limpeza Automotivo</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-slate-500 font-bold uppercase tracking-wider block">Valor de Venda Bruto ({currency})</label>
+              <form onSubmit={addOutflow} className="p-6 space-y-4 text-xs text-left">
+                <div className="space-y-1 relative">
+                  <div className="flex justify-between items-center">
+                    <label className="text-slate-500 font-bold uppercase tracking-wider block">Valor da Despesa</label>
+                    <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase">MT</span>
+                  </div>
                   <input 
                     type="number" 
-                    value={newValue}
-                    onChange={(e) => setNewValue(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-mono font-bold focus:outline-none focus:border-emerald-500"
-                    placeholder="999"
+                    value={outflowValue}
+                    onChange={(e) => setOutflowValue(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-mono font-bold text-lg focus:outline-none focus:border-emerald-500"
+                    placeholder="0.00"
                     required
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-slate-500 font-bold uppercase tracking-wider block">Canal de Recebimento</label>
+                  <label className="text-slate-500 font-bold uppercase tracking-wider block">Pagar com dinheiro de qual Pocket?</label>
                   <select 
-                    value={newPayment} 
-                    onChange={(e) => setNewPayment(e.target.value)}
+                    value={outflowPocket} 
+                    onChange={(e) => setOutflowPocket(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-medium focus:outline-none focus:border-emerald-500"
                   >
-                    <option value="M-Pesa">M-Pesa</option>
-                    <option value="e-Mola">e-Mola</option>
-                    <option value="Shopify Gateway">Shopify Gateway</option>
-                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="Anúncios">Anúncios (20%)</option>
+                    <option value="Fornecedor">Fornecedor (Custo)</option>
+                    <option value="Delivery">Delivery (Entrega)</option>
+                    <option value="Lucro">Lucro (80%)</option>
+                    <option value="Wifi">Wifi</option>
+                    <option value="Renda">Renda</option>
                   </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-slate-500 font-bold uppercase tracking-wider block">Categoria da Despesa</label>
+                  <select 
+                    value={outflowCategory} 
+                    onChange={(e) => setOutflowCategory(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white font-medium focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value="Anúncios (Facebook Ads/Google Ads)">Anúncios (Facebook Ads/Google Ads)</option>
+                    <option value="Custo do Fornecedor">Custo do Fornecedor (Custo de Produto)</option>
+                    <option value="Envio / Frete">Envio / Frete de Entrega</option>
+                    <option value="Software / Apps">Software / Apps</option>
+                    <option value="Aluguer / Renda">Aluguer / Renda</option>
+                    <option value="Outros">Outros custos operacionais</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-slate-500 font-bold uppercase tracking-wider block">Descrição / Nota</label>
+                  <input 
+                    type="text" 
+                    value={outflowDescription}
+                    onChange={(e) => setOutflowDescription(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500"
+                    placeholder="Ex: Campanha de criativos do Compressor de Ar, Apps adicionais"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-slate-500 font-bold uppercase tracking-wider block">Data do Pagamento</label>
+                  <input 
+                    type="date" 
+                    value={outflowDate}
+                    onChange={(e) => setOutflowDate(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-white focus:outline-none focus:border-emerald-500 font-mono"
+                    required
+                  />
                 </div>
 
                 <div className="pt-4 flex gap-3">
                   <button 
                     type="button"
-                    onClick={() => setShowAddModal(false)}
-                    className="w-1/2 py-3 bg-slate-950 hover:bg-slate-850 text-slate-400 border border-slate-800 rounded-xl font-bold transition-all"
+                    onClick={() => setShowOutflowModal(false)}
+                    className="w-1/2 py-3 bg-slate-950 hover:bg-slate-850 text-slate-400 border border-slate-800 rounded-xl font-bold transition-all text-center"
                   >
-                    Cancelar
+                    Voltar
                   </button>
                   <button 
                     type="submit"
-                    className="w-1/2 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/10"
+                    className="w-1/2 py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-rose-600/10 text-center"
                   >
-                    Lançar Venda
+                    Gravar Saída
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Confetti Particle Layer */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-50">
+        {celebrations.map((p) => (
+          <motion.div
+            key={p.id}
+            initial={{ 
+              left: `${p.startX}%`, 
+              top: `${p.startY}%`, 
+              opacity: 1, 
+              scale: 0,
+              rotate: p.rotate 
+            }}
+            animate={{ 
+              left: `calc(${p.startX}% + ${p.tx}px)`, 
+              top: `calc(${p.startY}% + ${p.ty}px)`, 
+              opacity: [1, 1, 0.7, 0], 
+              scale: [0, 1.3, 1, 0.4],
+              rotate: p.rotate + p.rotateSpeed,
+              y: [0, -100, 120, 350]
+            }}
+            transition={{ 
+              duration: 3.2 + Math.random() * 1.6, 
+              delay: p.delay, 
+              ease: "easeOut" 
+            }}
+            style={{
+              position: "absolute",
+              width: p.size,
+              height: p.size,
+              backgroundColor: p.color,
+              borderRadius: p.shape === "circle" ? "50%" : p.shape === "triangle" ? "0%" : "2px",
+              clipPath: p.shape === "triangle" ? "polygon(50% 0%, 0% 100%, 100% 100%)" : "none",
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Celebration Notification Toast */}
+      <AnimatePresence>
+        {showCelebrationBadge && lastAddedSale && (
+          <div className="absolute inset-0 flex items-center justify-center p-4 z-50 bg-slate-950/40 backdrop-blur-[2px] pointer-events-auto">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.82, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.85, y: -20 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+              className="bg-[#0b0f19] border border-emerald-500/30 p-6 rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden relative text-center"
+            >
+              {/* Confetti graphic rays in bg */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
+              
+              <div className="w-16 h-16 rounded-2xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center mx-auto mb-4 text-3xl animate-bounce">
+                🎉
+              </div>
+
+              <h5 className="font-display font-black text-white text-lg tracking-tight uppercase">Venda Registada!</h5>
+              <p className="text-[11px] text-emerald-400 font-semibold tracking-wider uppercase mt-1">O DroopFlow rateou com sucesso</p>
+              
+              {/* Receipt details */}
+              <div className="mt-4 bg-slate-950/80 rounded-2xl p-4 border border-slate-900 text-left space-y-2 text-xs font-mono">
+                <div className="flex justify-between items-center text-slate-400">
+                  <span className="font-sans font-medium text-[10px] uppercase">Produto</span>
+                  <span className="text-white font-sans font-bold truncate max-w-[140px]">{lastAddedSale.product}</span>
+                </div>
+                <div className="flex justify-between items-center text-slate-400">
+                  <span className="font-sans font-medium text-[10px] uppercase">Total Pago</span>
+                  <span className="text-emerald-400 font-black text-sm">{lastAddedSale.value.toLocaleString()} MT</span>
+                </div>
+
+                <div className="border-t border-slate-900/80 my-2 pt-2 space-y-1.5">
+                  <div className="flex justify-between items-center text-slate-400 text-[10px]">
+                    <span className="font-sans font-medium">📦 Fornecedor (Custo):</span>
+                    <span className="text-amber-400 font-bold">+{Math.round(lastAddedSale.for).toLocaleString()} MT</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-400 text-[10px]">
+                    <span className="font-sans font-medium">🚚 Entrega (Delivery):</span>
+                    <span className="text-indigo-400 font-bold">+{Math.round(lastAddedSale.del).toLocaleString()} MT</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-400 text-[10px]">
+                    <span className="font-sans font-medium">📢 Anúncios (Tráfego):</span>
+                    <span className="text-sky-400 font-bold">+{Math.round(lastAddedSale.ads).toLocaleString()} MT</span>
+                  </div>
+                </div>
+
+                <div className="border-t border-emerald-500/20 pt-2.5 flex justify-between items-center font-sans">
+                  <span className="font-black text-white text-[11px] uppercase tracking-wider">💰 Lucro Líquido:</span>
+                  <span className="font-mono font-black text-emerald-400 text-base">+{Math.round(lastAddedSale.luc).toLocaleString()} MT</span>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                <button 
+                  onClick={() => setShowCelebrationBadge(false)}
+                  className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl font-bold transition-all text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/15 cursor-pointer"
+                >
+                  Continuar Simulação
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
